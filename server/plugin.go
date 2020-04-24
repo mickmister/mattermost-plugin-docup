@@ -13,8 +13,8 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/google/go-github/github"
-	"github.com/mattermost/mattermost-server/model"
-	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
 // Plugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
@@ -53,16 +53,19 @@ func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Req
 	switch r.URL.Path {
 	case "/create":
 		p.handleCreate(w, r)
+	case "/list-plugin-repos":
+		p.handleListPluginRepos(w, r)
 	default:
 		http.NotFound(w, r)
 	}
 }
 
 type CreateAPIRequest struct {
-	Type   string `json:"type"`
-	Title  string `json:"title"`
-	Body   string `json:"body"`
-	PostID string `json:"post_id"`
+	Type     string `json:"type"`
+	Title    string `json:"title"`
+	Body     string `json:"body"`
+	PostID   string `json:"post_id"`
+	RepoName string `json:"repo_name"`
 }
 
 func (p *Plugin) handleCreate(w http.ResponseWriter, r *http.Request) {
@@ -91,6 +94,10 @@ func (p *Plugin) handleCreate(w http.ResponseWriter, r *http.Request) {
 		ownerAndRepo = config.DeveloperRepository
 	case "handbook":
 		ownerAndRepo = config.HandbookRepository
+	case "plugin":
+		owner := config.PluginRepositoriesOwner
+		repo := createRequest.RepoName
+		ownerAndRepo = fmt.Sprintf("%s/%s", owner, repo)
 	}
 
 	if ownerAndRepo == "" {
@@ -157,7 +164,6 @@ func (p *Plugin) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	post := &model.Post{
 		UserId:    userID,
 		ChannelId: docPost.ChannelId,
@@ -171,6 +177,10 @@ func (p *Plugin) handleCreate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func (p *Plugin) handleListPluginRepos(w http.ResponseWriter, r *http.Request) {
+	http.NotFound(w, r)
 }
 
 func NewString(s string) *string { return &s }

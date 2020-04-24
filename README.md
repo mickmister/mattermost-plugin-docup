@@ -45,6 +45,7 @@ In the plugin settings area, you can configure the repos for:
 - Admin Repository
 - Developer Docs Repository
 - Handbook Repository
+- Plugin Repositories
 
 You can also specify which Labels are applied to each newly created DocUp issues in GitHub.
 
